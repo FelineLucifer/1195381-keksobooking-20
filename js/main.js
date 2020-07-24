@@ -1,5 +1,134 @@
 'use strict';
 
+var adForm = document.querySelector('.ad-form');
+var adFieldset = adForm.querySelectorAll('fieldset');
+var mapFilters = document.querySelector('.map__filters');
+var mapSelect = mapFilters.querySelectorAll('select');
+var address = adForm.querySelector('#address');
+
+// Константы для меток
+var MAIN_PIN_X_OFFSET = 65 / 2;
+var MAIN_PIN_Y = 85;
+var MAIN_PIN_UNACTIVE_OFFSET = 156 / 2;
+
+var mapPinsElement = document.querySelector('.map__pins');
+var mainPin = mapPinsElement.querySelector('.map__pin--main');
+
+
+// Задаёт адрес по главной метке
+var addressInput = function (x, y) {
+  address.value = Math.floor(mainPin.offsetLeft + x) + ', ' + Math.floor(mainPin.offsetTop + y);
+};
+
+// неактивное состояние страницы
+adFieldset.forEach(function (item) {
+  item.setAttribute('disabled', true);
+});
+
+mapFilters.querySelector('fieldset').setAttribute('disabled', true);
+
+mapSelect.forEach(function (item) {
+  item.setAttribute('disabled', true);
+});
+
+addressInput(MAIN_PIN_UNACTIVE_OFFSET, MAIN_PIN_UNACTIVE_OFFSET);
+
+// активное состояние страницы
+var ENTER_KEY = 'Enter';
+
+var activeMode = function () {
+  adForm.classList.remove('ad-form--disabled');
+
+  adFieldset.forEach(function (item) {
+    item.removeAttribute('disabled');
+  });
+
+  address.setAttribute('readonly', true);
+  addressInput(MAIN_PIN_X_OFFSET, MAIN_PIN_Y);
+
+  mapFilters
+      .querySelector('fieldset')
+      .removeAttribute('disabled');
+
+  mapSelect.forEach(function (item) {
+    item.removeAttribute('disabled');
+  });
+
+  document
+      .querySelector('.map')
+      .classList
+      .remove('map--faded');
+
+  mapPinsElement.appendChild(window.pin.addPins());
+};
+
+mainPin.addEventListener('mousedown', function (evt) {
+  if (evt.button === 0) {
+    activeMode();
+  }
+});
+
+mainPin.addEventListener('keydown', function (evt) {
+  if (evt.key === ENTER_KEY) {
+    activeMode();
+  }
+});
+
+
+// Валидация объявления
+
+var roomsNumber = adForm.querySelector('#room_number');
+var guestsNumber = adForm.querySelector('#capacity');
+var housingType = adForm.querySelector('#type');
+var pricePerNight = adForm.querySelector('#price');
+var timeIn = adForm.querySelector('#timein');
+var timeOut = adForm.querySelector('#timeout');
+
+adForm.addEventListener('change', function () {
+  // Валидация времени заезда и выезда
+  timeOut.value = timeIn.value;
+
+  // Валидация количества комнат и гостей
+  if (roomsNumber.value === '1' && guestsNumber.value !== '1') {
+    guestsNumber.setCustomValidity('для 1 гостя');
+  } else if (roomsNumber.value === '2' && guestsNumber.value !== '2') {
+    guestsNumber.setCustomValidity('для 2 гостей');
+  } else if (roomsNumber.value === '3' && guestsNumber.value !== '3') {
+    guestsNumber.setCustomValidity('для 3 гостей');
+  } else if (roomsNumber.value === '100' && guestsNumber.value !== '0') {
+    guestsNumber.setCustomValidity('не для гостей');
+  } else {
+    guestsNumber.setCustomValidity('');
+  }
+
+  // Валидация типа жилья и цены
+  switch (housingType.value) {
+    case 'bungalo':
+      pricePerNight.min = '0';
+      pricePerNight.placeholder = '0';
+      break;
+    case 'flat':
+      pricePerNight.min = '1000';
+      pricePerNight.placeholder = '1000';
+      break;
+    case 'house':
+      pricePerNight.min = '5000';
+      pricePerNight.placeholder = '5000';
+      break;
+    case 'palace':
+      pricePerNight.min = '10000';
+      pricePerNight.placeholder = '10000';
+  }
+});
+
+
+var submitButton = adForm.querySelector('.ad-form__submit');
+submitButton.addEventListener('click', function () {
+  if (document.activeElement !== adForm) {
+    submitButton.setCustomValidity('заполните форму');
+  }
+});
+
 var getRandomArrElement = function (arr) {
   var random = arr[Math.floor(Math.random() * arr.length)];
   return random;
@@ -109,6 +238,8 @@ var getMapPins = function () {
 
 mapPins.appendChild(getMapPins());
 
+// Отрисовка карточек объявлений
+/*
 var mapCardTemplate = document.querySelector('#card')
   .content
   .querySelector('.map__card');
@@ -178,3 +309,4 @@ var getFragmentMapCard = function (ad) {
 };
 
 map.insertBefore(getFragmentMapCard(advertisment[0]), map.querySelector('.map__filters-container'));
+*/
